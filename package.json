@@ -1,12 +1,12 @@
 {
   "name": "ptcr",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "pt captcha recognizer",
   "main": "index.js",
   "scripts": {
     "test": "ts-node ./test/index.ts",
     "build": "tsc",
-    "publish": "npm run build && npm version patch && npm publish && rm -rf index.js"
+    "publish": "npm run build && npm version patch && npm config set registry https://registry.npmjs.org && npm publish && npm config set registry https://registry.npm.taobao.org && rm -rf index.js"
   },
   "keywords": [
     "pt",
