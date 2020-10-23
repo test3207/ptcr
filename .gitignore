@@ -1,0 +1,5 @@
+node_modules
+eng.traineddata
+temp
+yarn.lock
+.DS_Store
