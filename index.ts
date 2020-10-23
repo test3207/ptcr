@@ -3,7 +3,7 @@ import Tesseract from 'tesseract.js';
 import fs from 'fs';
 import { EventEmitter } from 'events';
 
-export default class Ptcr extends EventEmitter {
+export class Ptcr extends EventEmitter {
     private worker: Tesseract.Worker;
     // hard code for NexusPHP only! won't work for the others or modified ones!
     // if you are interested in related area, you can check tesseract for more detail.

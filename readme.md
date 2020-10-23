@@ -11,7 +11,7 @@ npm i ptcr
 ## usage
 
 ```typescript
-import Ptcr from '../index';
+import { Ptcr } from 'ptcr';
 (async () => {
     const ptcr = new Ptcr();
     console.log(await ptcr.run('https://photo.test3207.com/1NHND8.png')); // should be 1NHND8

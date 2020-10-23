@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import assert from 'assert';
-import Ptcr from '../index';
+import { Ptcr } from '../index';
 
 const imgList = fs.readdirSync(path.resolve(__dirname, 'example'));
 
