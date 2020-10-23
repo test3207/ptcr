@@ -1,6 +1,6 @@
 {
   "name": "ptcr",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "pt captcha recognizer",
   "main": "index.js",
   "scripts": {
