@@ -2,6 +2,7 @@ import sharp from 'sharp';
 import Tesseract from 'tesseract.js';
 import fs from 'fs';
 import { EventEmitter } from 'events';
+import path from 'path';
 
 export class Ptcr extends EventEmitter {
     private worker: Tesseract.Worker;
@@ -20,7 +21,7 @@ export class Ptcr extends EventEmitter {
     constructor() {
         super();
         this.worker = Tesseract.createWorker({
-            langPath: './lang-data',
+            langPath: path.resolve(__dirname, 'lang-data'),
         });
         this.on('checkQueue', async () => {
             if (!this.inited) {
