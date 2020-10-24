@@ -26,8 +26,26 @@ const imgList = fs.readdirSync(path.resolve(__dirname, 'example'));
     }
     console.log('local test done');
 
+    console.log('buffer test start');
+    for (const img of imgList) {
+        const imgDir = path.resolve(__dirname, 'example', img);
+        const realCode = img.match(/^(.*?)(\..*?)?$/)![1];
+
+        try {
+            const result = await ptcr.run(fs.readFileSync(imgDir));
+            assert.strictEqual(result, realCode, `not ok for ${imgDir}`);
+            console.log(`ok for ${imgDir}`);
+        } catch (e) {
+            console.log(e);
+            try {            
+                await ptcr.run(imgDir, true);
+            } catch (e) {}
+        }
+    }
+    console.log('buffer test done');
+
     console.log('online test start');
-    const onlineImg = 'https://photo.test3207.com/1NHND8.png'
+    const onlineImg = 'https://photo.test3207.com/1NHND8.png';
     try {
         const result = await ptcr.run(onlineImg);
         assert.strictEqual(result, '1NHND8', `not ok for online test`);

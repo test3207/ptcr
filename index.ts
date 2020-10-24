@@ -6,28 +6,32 @@ import path from 'path';
 import http from 'http';
 import https from 'https';
 
-const request = async (targetUrl:string, method='GET') => {
+const timeout = 5000;
+
+const request = async (targetUrl:string, method='GET', retry = 3) => {
     const protocol = (new URL(targetUrl)).protocol;
-    return await new Promise<Buffer>((resolve, reject) => {
+    while (retry) {
+        retry--;
         try {
-            (protocol === 'http:' ? http : https).request(targetUrl, { method }, (oauthRes) => {
-                const chunkList:any[] = [];
-                oauthRes.on('error', (e) => {
+            return await new Promise<Buffer>((resolve, reject) => {
+                (protocol === 'http:' ? http : https).request(targetUrl, { method, timeout }, (oauthRes) => {
+                    const chunkList:any[] = [];
+                    oauthRes.on('error', (e) => {
+                        reject(e);
+                    });
+                    oauthRes.on('data', (chunk) => {
+                        chunkList.push(chunk);
+                    });
+                    oauthRes.on('end', () => {
+                        resolve(Buffer.concat(chunkList));
+                    });
+                }).on('error', (e) => {
                     reject(e);
-                });
-                oauthRes.on('data', (chunk) => {
-                    chunkList.push(chunk);
-                });
-                oauthRes.on('end', () => {
-                    resolve(Buffer.concat(chunkList));
-                });
-            }).on('error', (e) => {
-                reject(e);
-            }).end();
-        } catch (e) {
-            reject(e);
-        }
-    });
+                }).end();
+            });
+        } catch (e) {}
+    }
+    throw new Error('timeout');
 };
 
 export class Ptcr extends EventEmitter {
@@ -41,7 +45,7 @@ export class Ptcr extends EventEmitter {
     private height = 12;
     private charLength = 6;
     private dev = false;
-    private queue:{img: string, resolve: any, reject: any} [] = [];
+    private queue:{img: string|Buffer, resolve: any, reject: any} [] = [];
     private inited = false;
     private checkQueueLock = false;
     constructor() {
@@ -66,7 +70,7 @@ export class Ptcr extends EventEmitter {
                 let result = '';
                 const id = Math.random().toFixed(4).slice(-4);
                 for (let i = 0 ; i < this.charLength ; i++) {
-                    const target = task.img.startsWith('http') ? await request(task.img) : task.img;
+                    const target = typeof task.img === 'string' && task.img.startsWith('http') ? await request(task.img) : task.img;
                     const buffer = await sharp(target).extract({
                         left: this.offset + i * this.step,
                         top: this.top,
@@ -109,7 +113,7 @@ export class Ptcr extends EventEmitter {
         });
     }
 
-    async run (img:string, dev = false) {
+    async run (img:string|Buffer, dev = false) {
         const startAt = Number(new Date());
         this.dev = dev;
         const result = await new Promise((resolve, reject) => {
