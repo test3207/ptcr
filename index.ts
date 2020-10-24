@@ -3,6 +3,32 @@ import Tesseract from 'tesseract.js';
 import fs from 'fs';
 import { EventEmitter } from 'events';
 import path from 'path';
+import http from 'http';
+import https from 'https';
+
+const request = async (targetUrl:string, method='GET') => {
+    const protocol = (new URL(targetUrl)).protocol;
+    return await new Promise<Buffer>((resolve, reject) => {
+        try {
+            (protocol === 'http:' ? http : https).request(targetUrl, { method }, (oauthRes) => {
+                const chunkList:any[] = [];
+                oauthRes.on('error', (e) => {
+                    reject(e);
+                });
+                oauthRes.on('data', (chunk) => {
+                    chunkList.push(chunk);
+                });
+                oauthRes.on('end', () => {
+                    resolve(Buffer.concat(chunkList));
+                });
+            }).on('error', (e) => {
+                reject(e);
+            }).end();
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 export class Ptcr extends EventEmitter {
     private worker: Tesseract.Worker;
@@ -40,7 +66,8 @@ export class Ptcr extends EventEmitter {
                 let result = '';
                 const id = Math.random().toFixed(4).slice(-4);
                 for (let i = 0 ; i < this.charLength ; i++) {
-                    const buffer = await sharp(task.img).extract({
+                    const target = task.img.startsWith('http') ? await request(task.img) : task.img;
+                    const buffer = await sharp(target).extract({
                         left: this.offset + i * this.step,
                         top: this.top,
                         width: this.width,
